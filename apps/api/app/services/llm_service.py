@@ -45,6 +45,7 @@ LLM_PROVIDERS: dict[str, dict[str, Any]] = {
         "label": "火山方舟 Coding Plan",
         "base_url": "https://ark.cn-beijing.volces.com/api/coding/v3",
         "default_model": "ark-code-latest",
+        "supports_response_format": False,
         "models": [
             "ark-code-latest",
             "doubao-seed-code",
@@ -128,8 +129,9 @@ class LLMService:
                 {"role": "user", "content": user_prompt},
             ],
             "temperature": 0.2,
-            "response_format": {"type": "json_object"},
         }
+        if self.provider_config.get("supports_response_format", True):
+            payload["response_format"] = {"type": "json_object"}
         body = json.dumps(payload).encode("utf-8")
         http_request = request.Request(
             f"{self.base_url.rstrip('/')}/chat/completions",
@@ -144,7 +146,10 @@ class LLMService:
         try:
             with request.urlopen(http_request, timeout=self.settings.llm_timeout_seconds) as response:
                 raw = response.read().decode("utf-8")
-        except (TimeoutError, error.URLError, error.HTTPError) as exc:
+        except error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"大模型调用失败: HTTP {exc.code} {detail}") from exc
+        except (TimeoutError, error.URLError) as exc:
             raise RuntimeError(f"大模型调用失败: {exc}") from exc
 
         data = json.loads(raw)
