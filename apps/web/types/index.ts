@@ -48,3 +48,18 @@ export interface ApiResponse<T> {
   data: T;
   message: string;
 }
+
+export interface LLMStatus {
+  enabled: boolean;
+  provider: string;
+  model: string;
+  base_url: string;
+  api_key_configured: boolean;
+}
+
+export interface LLMTestResult {
+  ok: boolean;
+  message: string;
+  model: string;
+  base_url: string;
+}

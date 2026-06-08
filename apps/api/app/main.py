@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.database import init_db
-from app.routes import agents, artifacts, documents, health, ppt, projects
+from app.routes import agents, artifacts, documents, health, integrations, ppt, projects
 
 
 settings = get_settings()
@@ -33,3 +33,4 @@ app.include_router(documents.router)
 app.include_router(artifacts.router)
 app.include_router(agents.router)
 app.include_router(ppt.router)
+app.include_router(integrations.router)

@@ -48,3 +48,15 @@ class LLMService:
         if isinstance(content, dict):
             return content
         return json.loads(content)
+
+    def test_connection(self) -> dict[str, Any]:
+        result = self.chat_json(
+            "你是连通性测试助手。只输出 JSON。",
+            '请返回 {"ok": true, "message": "connected"}',
+        )
+        return {
+            "ok": bool(result and result.get("ok")),
+            "message": str(result.get("message", "connected") if result else "not configured"),
+            "model": self.settings.llm_model,
+            "base_url": self.settings.llm_base_url,
+        }
