@@ -24,8 +24,10 @@ export const api = {
   listProjects: () => request<Project[]>("/projects"),
   createProject: (data: Omit<Project, "id" | "status" | "created_at" | "updated_at">) =>
     request<Project>("/projects", { method: "POST", body: JSON.stringify(data) }),
+  deleteProject: (id: number) => request<{ deleted: boolean }>(`/projects/${id}`, { method: "DELETE" }),
   getProject: (id: number) => request<Project>(`/projects/${id}`),
   listDocuments: (projectId: number) => request<DocumentItem[]>(`/projects/${projectId}/documents`),
+  deleteDocument: (documentId: number) => request<{ deleted: boolean }>(`/documents/${documentId}`, { method: "DELETE" }),
   uploadDocument: (projectId: number, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
