@@ -89,14 +89,16 @@ class LLMService:
         provider_key = provider if provider in LLM_PROVIDERS else "bailian"
         provider_config = LLM_PROVIDERS[provider_key]
         next_api_key = api_key.strip() or self.api_key
+        next_base_url = (base_url or "").strip()
         if next_api_key.startswith("sk-sp-") and provider_key == "bailian":
             provider_key = "bailian_coding"
             provider_config = LLM_PROVIDERS[provider_key]
+            next_base_url = str(provider_config["base_url"])
         data = {
             "api_key": next_api_key,
             "provider": provider_key,
             "model": model.strip() or str(provider_config["default_model"]),
-            "base_url": (base_url or "").strip() or str(provider_config["base_url"]),
+            "base_url": next_base_url or str(provider_config["base_url"]),
         }
         self.settings.llm_config_file.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         self.config = data
