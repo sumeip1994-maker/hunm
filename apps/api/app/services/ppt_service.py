@@ -22,7 +22,7 @@ class PPTService:
             .where(Artifact.project_id == project.id, Artifact.type == "outline")
             .order_by(desc(Artifact.version))
         )
-        sections = ["标题页", "汇报背景", "核心问题", "资料与证据整理", "总结"]
+        sections = ["标题页", "PPT背景", "核心问题", "资料与证据整理", "总结"]
         if outline:
             sections = [item.get("title", "未命名章节") for item in outline.content_json.get("sections", [])]
 
@@ -102,7 +102,7 @@ class PPTService:
         self._add_title(slide, "总结")
         body = slide.shapes.add_textbox(Inches(0.95), Inches(1.7), Inches(11.5), Inches(4.8))
         frame = body.text_frame
-        for text in ["Key Takeaways", "后续可补充证据和审稿建议", "病例资料和敏感信息需完成脱敏"]:
+        for text in ["Key Takeaways", "后续可补充证据和PPT优化建议", "病例资料和敏感信息需完成脱敏"]:
             p = frame.paragraphs[0] if not frame.text else frame.add_paragraph()
             p.text = text
             p.font.name = FONT_NAME

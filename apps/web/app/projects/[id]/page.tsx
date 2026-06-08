@@ -20,12 +20,12 @@ interface OutlineContent {
 const tabs: { key: TabKey; label: string }[] = [
   { key: "overview", label: "项目概览" },
   { key: "documents", label: "资料中心" },
-  { key: "analysis", label: "AI分析" },
-  { key: "planning", label: "汇报规划" },
+  { key: "analysis", label: "资料提炼" },
+  { key: "planning", label: "PPT大纲" },
   { key: "ppt", label: "PPT生成" },
-  { key: "review", label: "PPT审稿" },
-  { key: "qa", label: "专家问答" },
-  { key: "script", label: "讲稿" }
+  { key: "review", label: "PPT优化" },
+  { key: "qa", label: "答疑备忘" },
+  { key: "script", label: "页面备注" }
 ];
 
 function asList(value: unknown): string[] {
@@ -142,7 +142,7 @@ export default function ProjectWorkspacePage() {
       <header className="border-b border-slate-200 bg-white px-6 py-5">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div>
-            <p className="text-sm text-clinical-700">医学学术汇报工作台</p>
+            <p className="text-sm text-clinical-700">医学 PPT 制作助手</p>
             <h1 className="mt-1 text-2xl font-semibold text-clinical-900">{project.title}</h1>
             <p className="mt-2 text-sm text-slate-600">
               {presentationTypeLabels[project.presentation_type]} · {project.audience} · {project.duration_minutes}分钟
@@ -179,7 +179,7 @@ export default function ProjectWorkspacePage() {
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <button className="btn-primary" onClick={runWorkflow} disabled={busy === "workflow"}>
                   {busy === "workflow" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  {busy === "workflow" ? "正在生成完整工作流..." : "一键生成完整工作流"}
+                  {busy === "workflow" ? "正在生成PPT制作流程..." : "一键生成PPT"}
                 </button>
                 {downloadUrl ? (
                   <a className="btn-secondary" href={downloadUrl}>
@@ -191,7 +191,7 @@ export default function ProjectWorkspacePage() {
               {workflowMessage ? <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{workflowMessage}</div> : null}
               <div className="mt-5 rounded-md bg-slate-50 p-4 text-sm text-slate-700">
                 <p className="font-medium text-slate-900">下一步建议</p>
-                <p className="mt-2">上传病例、文献或已有PPT后，可一键生成分析、方向、目录、PPT、审稿、问答和讲稿。</p>
+                <p className="mt-2">上传病例、文献或已有PPT后，可一键完成资料提炼、PPT方案、页面大纲、PPT生成和优化建议。</p>
                 <p className="mt-2">核心问题：{project.core_question}</p>
               </div>
             </Panel>
@@ -222,8 +222,8 @@ export default function ProjectWorkspacePage() {
           ) : null}
 
           {activeTab === "analysis" ? (
-            <Panel title="AI分析">
-              <ActionButton busy={busy === "analyze"} onClick={() => run("analyze", "analyze")} label="开始AI分析" />
+            <Panel title="资料提炼">
+              <ActionButton busy={busy === "analyze"} onClick={() => run("analyze", "analyze")} label="提炼PPT素材" />
               {analysis ? (
                 <ResultBlock
                   items={[
@@ -231,21 +231,21 @@ export default function ProjectWorkspacePage() {
                     ["关键问题", asList(analysis.key_questions).join(" / ")],
                     ["学术价值", String(analysis.academic_value || "")],
                     ["教学价值", String(analysis.teaching_value || "")],
-                    ["可能的汇报重点", asList(analysis.suggested_focus).join(" / ")],
+                    ["可放入PPT的重点", asList(analysis.suggested_focus).join(" / ")],
                     ["风险提示", asList(analysis.risk_notes).join(" / ")]
                   ]}
                 />
               ) : (
-                <EmptyState title="尚未生成分析" description="点击按钮后会保存 analysis_report Artifact。" />
+                <EmptyState title="尚未提炼资料" description="点击后会把资料整理成可用于PPT的摘要、重点和风险提示。" />
               )}
             </Panel>
           ) : null}
 
           {activeTab === "planning" ? (
-            <Panel title="汇报规划">
+            <Panel title="PPT大纲">
               <div className="flex flex-wrap gap-3">
-                <ActionButton busy={busy === "directions"} onClick={() => run("directions", "directions")} label="生成汇报方向" />
-                <ActionButton busy={busy === "outline"} onClick={() => run("outline", "outline")} label="生成目录" />
+                <ActionButton busy={busy === "directions"} onClick={() => run("directions", "directions")} label="生成PPT方案" />
+                <ActionButton busy={busy === "outline"} onClick={() => run("outline", "outline")} label="生成页面大纲" />
               </div>
               <Directions content={directions} />
               <EditableOutline outline={outline} />
@@ -270,26 +270,26 @@ export default function ProjectWorkspacePage() {
           ) : null}
 
           {activeTab === "review" ? (
-            <Panel title="PPT审稿">
-              <ActionButton busy={busy === "review"} onClick={() => run("review", "review")} label="生成审稿建议" />
+            <Panel title="PPT优化">
+              <ActionButton busy={busy === "review"} onClick={() => run("review", "review")} label="生成优化建议" />
               <ReviewView content={review} />
             </Panel>
           ) : null}
           {activeTab === "qa" ? (
-            <Panel title="专家问答">
-              <ActionButton busy={busy === "qa"} onClick={() => run("qa", "qa")} label="生成专家问题" />
+            <Panel title="答疑备忘">
+              <ActionButton busy={busy === "qa"} onClick={() => run("qa", "qa")} label="生成可能追问" />
               <QAView content={qa} />
             </Panel>
           ) : null}
           {activeTab === "script" ? (
-            <Panel title="讲稿">
+            <Panel title="页面备注">
               <div className="mb-4 flex flex-wrap items-center gap-3">
                 <select className="input w-40" value={scriptDuration} onChange={(e) => setScriptDuration(Number(e.target.value))}>
                   <option value={10}>10分钟版</option>
                   <option value={20}>20分钟版</option>
                   <option value={30}>30分钟版</option>
                 </select>
-                <ActionButton busy={busy === "script"} onClick={() => run("script", "script", `?duration=${scriptDuration}`)} label="生成讲稿" />
+                <ActionButton busy={busy === "script"} onClick={() => run("script", "script", `?duration=${scriptDuration}`)} label="生成页面备注" />
               </div>
               <ScriptView content={script} />
             </Panel>
@@ -302,9 +302,9 @@ export default function ProjectWorkspacePage() {
             <h2 className="font-semibold">AI 助手提示</h2>
           </div>
           <div className="mt-4 space-y-3 text-sm text-slate-600">
-            <p>已支持阿里云百炼接入；未配置密钥时会使用 mock 数据。</p>
-            <p>建议先补齐资料，再依次生成分析、方向、目录和PPT。</p>
-            <p>请确保病例资料完成脱敏，不在汇报中输出诊疗决策建议。</p>
+            <p>已接入火山方舟 Coding Plan，可辅助提炼资料、组织页面和生成PPT。</p>
+            <p>建议先补齐资料，再一键生成PPT，最后进入PPT优化查看修改建议。</p>
+            <p>请确保病例资料完成脱敏，不在PPT中输出诊疗决策建议。</p>
           </div>
         </aside>
       </div>
@@ -401,7 +401,7 @@ function EditableOutline({ outline }: { outline: OutlineContent | undefined }) {
 }
 
 function ReviewView({ content }: { content: Record<string, unknown> | undefined }) {
-  if (!content) return <EmptyState title="尚未生成审稿建议" description="点击按钮后会按学术性、逻辑、证据和视觉表达给出修改建议。" />;
+  if (!content) return <EmptyState title="尚未生成优化建议" description="点击按钮后会按学术性、逻辑、证据和视觉表达给出PPT修改建议。" />;
   const scores = [
     ["学术性", content.academic_score],
     ["逻辑性", content.logic_score],
@@ -423,7 +423,7 @@ function ReviewView({ content }: { content: Record<string, unknown> | undefined 
 }
 
 function QAView({ content }: { content: Record<string, unknown> | undefined }) {
-  if (!content) return <EmptyState title="尚未生成专家问答" description="点击按钮后会生成主任、专家和方法学角度的追问。" />;
+  if (!content) return <EmptyState title="尚未生成答疑备忘" description="点击按钮后会生成读者可能追问的问题和回答思路。" />;
   return (
     <div className="mt-5 grid gap-3">
       <ListCard title="主任可能会问" items={asList(content.director_questions)} />
@@ -435,7 +435,7 @@ function QAView({ content }: { content: Record<string, unknown> | undefined }) {
 }
 
 function ScriptView({ content }: { content: Record<string, unknown> | undefined }) {
-  if (!content) return <EmptyState title="尚未生成讲稿" description="点击按钮后会按页生成讲稿、预计用时和转场句。" />;
+  if (!content) return <EmptyState title="尚未生成页面备注" description="点击按钮后会按页生成备注、预计用时和页面衔接建议。" />;
   const slides = Array.isArray(content.slides) ? content.slides : [];
   return (
     <div className="mt-5 space-y-4">

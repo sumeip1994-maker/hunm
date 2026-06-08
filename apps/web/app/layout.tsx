@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "医学学术汇报工作台",
+  title: "医学 PPT 制作助手",
   description: "Medical Presentation Studio"
 };
 

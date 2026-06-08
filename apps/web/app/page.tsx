@@ -28,8 +28,8 @@ export default function DashboardPage() {
       <header className="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end">
         <div>
           <p className="text-sm font-medium text-clinical-700">Medical Presentation Studio</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal text-clinical-900">医学学术汇报工作台</h1>
-          <p className="mt-3 text-slate-600">从资料到PPT，一站式完成医学学术汇报</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-normal text-clinical-900">医学 PPT 制作助手</h1>
+          <p className="mt-3 text-slate-600">从资料提炼到PPT生成，一站式辅助制作医学PPT</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Link href="/model-integration" className="btn-secondary">
@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
       {error ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
       {loading ? <div className="panel p-6 text-sm text-slate-500">正在加载项目...</div> : null}
-      {!loading && projects.length === 0 ? <EmptyState title="还没有项目" description="创建第一个汇报项目后，资料、目录和PPT都会围绕项目组织。" /> : null}
+      {!loading && projects.length === 0 ? <EmptyState title="还没有项目" description="创建第一个PPT项目后，资料、页面大纲和PPT都会围绕项目组织。" /> : null}
 
       <section className="grid gap-4 md:grid-cols-2">
         {projects.map((project) => (

@@ -36,9 +36,9 @@ class ReviewService:
 
     def _generate_with_llm(self, project: Project) -> dict[str, Any] | None:
         result = LLMService(self.settings).chat_json(
-            "你是医学学术 PPT 审稿助手。只输出严格 JSON，不给个体化诊疗建议。",
+            "你是医学PPT优化助手。只输出严格 JSON，不给个体化诊疗建议。",
             f"""
-请按学术性、逻辑性、证据支撑、视觉表达审阅这个医学汇报项目，输出 JSON：
+请按学术性、逻辑性、证据支撑、视觉表达优化这个医学PPT项目，输出 JSON：
 academic_score: 0-100 数字
 logic_score: 0-100 数字
 evidence_score: 0-100 数字
@@ -48,7 +48,7 @@ suggestions: 字符串数组
 priority_fixes: 字符串数组
 
 项目名称：{project.title}
-汇报类型：{project.presentation_type}
+PPT类型：{project.presentation_type}
 目标听众：{project.audience}
 预计时长：{project.duration_minutes}分钟
 核心问题：{project.core_question}

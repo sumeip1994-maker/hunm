@@ -18,13 +18,13 @@ class AnalysisService:
         return {
             "summary": "根据已上传资料，本项目适合整理为一次医学学术分享。",
             "key_questions": [
-                "本次汇报的核心临床或学术问题是什么？",
+                "这套PPT要解决的核心临床或学术问题是什么？",
                 "现有资料是否足以支撑结论？",
                 "是否需要补充指南或高质量文献？",
             ],
             "academic_value": "中高",
             "teaching_value": "高",
-            "suggested_focus": ["临床问题引入", "资料证据整合", "汇报结论和讨论"],
+            "suggested_focus": ["临床问题引入", "资料证据整合", "PPT结论和讨论页"],
             "risk_notes": ["避免做出未经证据支持的诊疗结论", "病例资料应完成脱敏"],
         }
 
@@ -38,11 +38,11 @@ class AnalysisService:
             docs_text = "尚未上传资料，请基于项目元信息给出准备建议。"
 
         system_prompt = (
-            "你是医学学术汇报助手，只做资料整理、汇报结构建议和风险提醒。"
+            "你是医学PPT制作助手，只做资料整理、PPT内容结构建议和风险提醒。"
             "不要给出个体化诊疗决策。必须输出严格 JSON。"
         )
         user_prompt = f"""
-请为以下医学学术汇报项目生成 AI 分析，输出 JSON，字段必须是：
+请为以下医学PPT项目生成资料提炼结果，输出 JSON，字段必须是：
 summary: 字符串
 key_questions: 字符串数组
 academic_value: 字符串
@@ -51,7 +51,7 @@ suggested_focus: 字符串数组
 risk_notes: 字符串数组
 
 项目名称：{project.title}
-汇报类型：{project.presentation_type}
+PPT类型：{project.presentation_type}
 目标听众：{project.audience}
 预计时长：{project.duration_minutes}分钟
 核心问题：{project.core_question}

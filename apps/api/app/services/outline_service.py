@@ -19,7 +19,7 @@ class OutlineService:
         doc_count = len(documents or [])
         sections = [
             "标题页",
-            "汇报背景与问题来源",
+            "PPT背景与问题来源",
             f"核心问题：{core_question}" if core_question else "核心问题",
             f"资料基础与证据来源（{doc_count}份资料）" if doc_count else "资料基础与待补充证据",
             "关键发现与证据解读",
@@ -32,7 +32,7 @@ class OutlineService:
             "notes": [
                 "每页只保留一个主要观点，避免堆叠大段文字。",
                 "涉及病例和检查结果时先脱敏，再展示必要信息。",
-                "结论页不要写成诊疗建议，应写成证据范围内的汇报结论。",
+                "结论页不要写成诊疗建议，应写成证据范围内的PPT结论。",
             ],
         }
 
@@ -42,15 +42,15 @@ class OutlineService:
             for document in documents
         ) or "尚未上传资料。"
         result = LLMService(self.settings).chat_json(
-            "你是医学学术汇报目录策划助手。只输出严格 JSON，不输出诊疗建议。",
+            "你是医学PPT页面大纲策划助手。只输出严格 JSON，不输出诊疗建议。",
             f"""
-请生成适合 {project.duration_minutes} 分钟医学学术汇报的目录，输出 JSON：
+请生成医学PPT页面大纲，输出 JSON：
 sections: 数组，每项包含 title、level、goal。
 notes: 字符串数组。
-目录控制在 6 到 9 个章节，标题要具体，围绕核心问题组织。
+大纲控制在 6 到 9 个页面/章节，标题要具体，围绕核心问题组织。
 
 项目名称：{project.title}
-汇报类型：{project.presentation_type}
+PPT类型：{project.presentation_type}
 目标听众：{project.audience}
 核心问题：{project.core_question}
 
@@ -78,14 +78,14 @@ notes: 字符串数组。
 
     def _goal_for(self, title: str) -> str:
         if "核心问题" in title:
-            return "让听众明确本次汇报要回答什么。"
+            return "让读者明确这套PPT要回答什么。"
         if "证据" in title or "资料" in title:
             return "交代资料来源、质量和局限。"
         if "讨论" in title:
             return "引导专家围绕争议点和适用边界讨论。"
         if "结论" in title:
             return "收束观点，给出可继续完善的方向。"
-        return "支撑汇报叙事。"
+            return "支撑PPT叙事。"
 
     def _as_str_list(self, value: Any) -> list[str]:
         if isinstance(value, list):

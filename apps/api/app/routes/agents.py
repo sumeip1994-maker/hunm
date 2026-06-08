@@ -51,7 +51,7 @@ def directions(
 ) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
     artifact = create_artifact(db, project_id, "direction_recommendation", DirectionService(settings).generate(project, list(project.documents)))
-    return ApiResponse(data=artifact, message="汇报方向已生成")
+    return ApiResponse(data=artifact, message="PPT制作方案已生成")
 
 
 @router.post("/outline", response_model=ApiResponse[ArtifactRead])
@@ -77,7 +77,7 @@ def review(
     artifact = create_artifact(db, project_id, "review_report", ReviewService(settings).generate(project))
     project.status = "reviewed"
     db.commit()
-    return ApiResponse(data=artifact, message="审稿建议已生成")
+    return ApiResponse(data=artifact, message="PPT优化建议已生成")
 
 
 @router.post("/qa", response_model=ApiResponse[ArtifactRead])
@@ -88,7 +88,7 @@ def qa(
 ) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
     artifact = create_artifact(db, project_id, "qa_report", QAService(settings).generate(project))
-    return ApiResponse(data=artifact, message="专家问答已生成")
+    return ApiResponse(data=artifact, message="答疑备忘已生成")
 
 
 @router.post("/script", response_model=ApiResponse[ArtifactRead])
@@ -100,7 +100,7 @@ def script(
 ) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
     artifact = create_artifact(db, project_id, "script", ScriptService(settings).generate(duration, project))
-    return ApiResponse(data=artifact, message="讲稿已生成")
+    return ApiResponse(data=artifact, message="页面备注已生成")
 
 
 @router.post("/workflow", response_model=ApiResponse[dict[str, object]])
@@ -117,18 +117,14 @@ def workflow(
     create_artifact(db, project_id, "analysis_report", AnalysisService(settings).generate(project, documents))
     steps.append({"key": "analysis", "label": "AI分析"})
     create_artifact(db, project_id, "direction_recommendation", DirectionService(settings).generate(project, documents))
-    steps.append({"key": "directions", "label": "汇报方向"})
+    steps.append({"key": "directions", "label": "PPT方案"})
     create_artifact(db, project_id, "outline", OutlineService(settings).generate(project, documents))
-    steps.append({"key": "outline", "label": "目录"})
+    steps.append({"key": "outline", "label": "页面大纲"})
 
     ppt_result = PPTService().generate(db, settings, project)
     steps.append({"key": "ppt", "label": "PPT生成"})
     create_artifact(db, project_id, "review_report", ReviewService(settings).generate(project))
-    steps.append({"key": "review", "label": "PPT审稿"})
-    create_artifact(db, project_id, "qa_report", QAService(settings).generate(project))
-    steps.append({"key": "qa", "label": "专家问答"})
-    create_artifact(db, project_id, "script", ScriptService(settings).generate(duration, project))
-    steps.append({"key": "script", "label": "讲稿"})
+    steps.append({"key": "review", "label": "PPT优化建议"})
 
     project.status = "reviewed"
     db.commit()
