@@ -158,18 +158,18 @@ export default function ProjectWorkspacePage() {
   const script = latest.get("script")?.content_json;
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5] text-slate-900">
-      <header className="border-b border-slate-200 bg-white px-6 py-5">
+    <main className="min-h-screen bg-studio-mist text-slate-900">
+      <header className="bg-studio-ink px-6 py-6 text-white">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
-            <p className="text-sm font-medium text-clinical-700">医生学术PPT工作台</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-normal text-slate-950">{project.title}</h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="text-sm font-medium text-studio-magenta">医生学术PPT工作台</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-normal text-studio-lime">{project.title}</h1>
+            <p className="mt-2 text-sm text-white/70">
               {presentationTypeLabels[project.presentation_type]} · {project.audience} · {project.duration_minutes}分钟
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/model-integration" className="btn-secondary">
+            <Link href="/model-integration" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20">
               <PlugZap className="h-4 w-4" />
               AI能力中心
             </Link>
@@ -179,7 +179,7 @@ export default function ProjectWorkspacePage() {
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-5 px-6 py-6 lg:grid-cols-[240px_1fr_320px]">
-        <aside className="h-fit rounded-md border border-slate-200 bg-white p-3 shadow-sm">
+        <aside className="h-fit rounded-md border border-purple-100 bg-white p-3 shadow-sm">
           {navigationGroups.map((group) => (
             <div key={group.title} className="mb-5 last:mb-0">
               <p className="px-2 text-xs font-semibold text-slate-400">{group.title}</p>
@@ -187,7 +187,7 @@ export default function ProjectWorkspacePage() {
                 {group.items.map((item) => (
                   <button
                     key={item.key}
-                    className={`rounded-md px-3 py-2 text-left text-sm transition ${activeView === item.key ? "bg-clinical-700 text-white" : "text-slate-700 hover:bg-slate-100"}`}
+                    className={`rounded-md px-3 py-2 text-left text-sm transition ${activeView === item.key ? "bg-studio-ink text-white" : "text-slate-700 hover:bg-studio-mist"}`}
                     onClick={() => setActiveView(item.key)}
                   >
                     {item.label}
@@ -200,7 +200,7 @@ export default function ProjectWorkspacePage() {
 
         <section className="min-w-0">
           {error ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
-          <div className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-md border border-purple-100 bg-white p-6 shadow-sm">
             {activeView === "documents" ? <DocumentsCenter documents={documents} busy={busy} onUpload={onUpload} onDelete={deleteDocument} /> : null}
             {activeView === "analysis" ? <AnalysisCenter analysis={analysis} busy={busy} onRun={() => run("analyze", "analyze")} /> : null}
             {activeView === "literature" ? <LiteratureCenter analysis={analysis} busy={busy} onRun={() => run("analyze", "analyze")} /> : null}
@@ -225,7 +225,7 @@ export default function ProjectWorkspacePage() {
 function SectionHeader({ title, description }: { title: string; description: string }) {
   return (
     <div className="mb-5 border-b border-slate-200 pb-4">
-      <h2 className="text-xl font-semibold tracking-normal text-slate-950">{title}</h2>
+      <h2 className="text-xl font-semibold tracking-normal text-studio-ink">{title}</h2>
       <p className="mt-2 text-sm text-slate-600">{description}</p>
     </div>
   );
@@ -235,8 +235,8 @@ function DocumentsCenter({ documents, busy, onUpload, onDelete }: { documents: D
   return (
     <div>
       <SectionHeader title="资料中心" description="上传病例、文献、指南、图片、检查数据或已有PPT，系统会自动分类并用于后续PPT制作。" />
-      <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-clinical-400">
-        <FileUp className="h-8 w-8 text-clinical-700" />
+      <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-purple-200 bg-studio-mist px-4 py-8 text-center hover:border-studio-violet">
+        <FileUp className="h-8 w-8 text-studio-violet" />
         <span className="mt-3 text-sm font-medium text-slate-900">{busy === "upload" ? "正在上传..." : "拖拽或点击上传资料"}</span>
         <span className="mt-1 text-xs text-slate-500">PDF / DOCX / PPTX / 图片 / Excel</span>
         <input className="hidden" type="file" multiple accept=".pdf,.pptx,.docx,.jpg,.jpeg,.png,.xlsx,.xls" onChange={onUpload} disabled={busy === "upload"} />
@@ -244,7 +244,7 @@ function DocumentsCenter({ documents, busy, onUpload, onDelete }: { documents: D
       <div className="mt-5 grid gap-3">
         {documents.length === 0 ? <EmptyState title="还没有资料" description="先上传资料，AI会自动识别病例、文献、图片、检查数据和已有PPT。" /> : null}
         {documents.map((doc) => (
-          <div key={doc.id} className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm">
+          <div key={doc.id} className="rounded-md border border-purple-100 bg-white px-4 py-3 text-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="font-medium text-slate-900">{doc.original_filename}</p>
@@ -409,9 +409,9 @@ function AcademicAdvisor({ documents, analysis, review }: { documents: DocumentI
   const risks = asList(analysis?.risk_notes);
   const issues = asList(review?.issues);
   return (
-    <aside className="h-fit rounded-md border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-2 text-clinical-900">
-        <Bot className="h-5 w-5" />
+    <aside className="h-fit rounded-md border border-purple-100 bg-white p-5 shadow-sm">
+      <div className="flex items-center gap-2 text-studio-ink">
+        <Bot className="h-5 w-5 text-studio-magenta" />
         <h2 className="font-semibold">AI学术顾问</h2>
       </div>
       <div className="mt-5 space-y-4 text-sm">
@@ -474,7 +474,7 @@ function Directions({ content }: { content: Record<string, unknown> | undefined 
       {directions.map((item, index) => {
         const direction = item as Record<string, unknown>;
         return (
-          <div key={index} className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm">
+          <div key={index} className="rounded-md border border-purple-100 bg-studio-mist p-4 text-sm">
             <p className="font-semibold text-slate-900">{String(direction.name || "")}</p>
             <p className="mt-2 leading-6 text-slate-600">{String(direction.scenario || "")}</p>
             <p className="mt-2 leading-6 text-slate-600">{String(direction.reason || "")}</p>
@@ -549,16 +549,16 @@ function QAView({ content }: { content: Record<string, unknown> | undefined }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+    <div className="rounded-md border border-purple-100 bg-studio-mist p-4">
       <p className="text-sm text-slate-500">{label}</p>
-      <p className="mt-2 text-xl font-semibold text-clinical-900">{value}</p>
+      <p className="mt-2 text-xl font-semibold text-studio-violet">{value}</p>
     </div>
   );
 }
 
 function ListCard({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm">
+    <div className="rounded-md border border-purple-100 bg-studio-mist p-4 text-sm">
       <p className="font-medium text-slate-900">{title}</p>
       {items.length ? (
         <ul className="mt-2 space-y-2 text-slate-600">

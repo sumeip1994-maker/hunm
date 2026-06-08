@@ -84,17 +84,23 @@ function NewProjectContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5] px-6 py-8">
-      <div className="mx-auto max-w-5xl">
-        <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-clinical-700">
-          <ArrowLeft className="h-4 w-4" />
-          返回首页
-        </Link>
+    <main className="min-h-screen bg-studio-mist">
+      <section className="bg-studio-ink px-6 py-8 text-white">
+        <div className="mx-auto max-w-5xl">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white">
+            <ArrowLeft className="h-4 w-4" />
+            返回首页
+          </Link>
+          <div className="py-10">
+            <p className="text-sm font-medium text-studio-magenta">新建任务</p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-normal text-studio-lime">先选择你要完成的PPT任务</h1>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/75">项目信息可以后续再补充。先上传资料或输入主题，让系统进入对应工作流。</p>
+          </div>
+        </div>
+      </section>
 
-        <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium text-clinical-700">新建任务</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">先选择你要完成的PPT任务</h1>
-          <p className="mt-2 text-sm text-slate-600">项目信息可以后续再补充。先上传资料或输入主题，让系统进入对应工作流。</p>
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <section className="rounded-md border border-purple-100 bg-white p-6 shadow-sm">
 
           {error ? <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
 
@@ -107,10 +113,10 @@ function NewProjectContent() {
                   <button
                     key={item.key}
                     type="button"
-                    className={`rounded-md border p-4 text-left transition ${active ? "border-clinical-500 bg-clinical-50" : "border-slate-200 bg-white hover:border-slate-300"}`}
+                    className={`rounded-md border p-4 text-left transition ${active ? "border-studio-violet bg-studio-mist" : "border-purple-100 bg-white hover:border-studio-violet"}`}
                     onClick={() => setMode(item.key)}
                   >
-                    <Icon className={`h-5 w-5 ${active ? "text-clinical-700" : "text-slate-500"}`} />
+                    <Icon className={`h-5 w-5 ${active ? "text-studio-violet" : "text-slate-500"}`} />
                     <p className="mt-3 text-sm font-semibold text-slate-950">{item.title}</p>
                     <p className="mt-2 text-xs leading-5 text-slate-500">{item.description}</p>
                   </button>
@@ -119,13 +125,13 @@ function NewProjectContent() {
             </div>
 
             <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_280px]">
-              <div className="rounded-md border border-slate-200 bg-slate-50 p-5">
+              <div className="rounded-md border border-purple-100 bg-studio-mist p-5">
                 <h2 className="text-base font-semibold text-slate-950">{selected.title}</h2>
                 <p className="mt-2 text-sm text-slate-600">{selected.description}</p>
 
                 {needsFile ? (
-                  <label className="mt-5 flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-slate-300 bg-white px-4 py-8 text-center hover:border-clinical-400">
-                    <FileUp className="h-8 w-8 text-clinical-700" />
+                  <label className="mt-5 flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-purple-200 bg-white px-4 py-8 text-center hover:border-studio-violet">
+                    <FileUp className="h-8 w-8 text-studio-violet" />
                     <span className="mt-3 text-sm font-medium text-slate-900">拖拽或点击上传资料</span>
                     <span className="mt-1 text-xs text-slate-500">PDF / DOCX / PPTX / 图片 / Excel</span>
                     <input className="hidden" type="file" multiple accept=".pdf,.pptx,.docx,.jpg,.jpeg,.png,.xlsx,.xls" onChange={onFiles} />
@@ -148,7 +154,7 @@ function NewProjectContent() {
                 ) : null}
               </div>
 
-              <aside className="rounded-md border border-slate-200 bg-white p-5">
+              <aside className="rounded-md border border-purple-100 bg-white p-5">
                 <p className="text-sm font-semibold text-slate-950">后置项目信息</p>
                 <p className="mt-2 text-xs leading-5 text-slate-500">这些信息用于生成PPT风格和内容深度，后续仍可修改。</p>
                 <label className="mt-4 block text-sm font-medium text-slate-700">
