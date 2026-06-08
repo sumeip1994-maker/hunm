@@ -44,15 +44,15 @@ def analyze(
 
 @router.post("/directions", response_model=ApiResponse[ArtifactRead])
 def directions(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
-    require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "direction_recommendation", DirectionService().generate())
+    project = require_project(db, project_id)
+    artifact = create_artifact(db, project_id, "direction_recommendation", DirectionService().generate(project, list(project.documents)))
     return ApiResponse(data=artifact, message="汇报方向已生成")
 
 
 @router.post("/outline", response_model=ApiResponse[ArtifactRead])
 def outline(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "outline", OutlineService().generate())
+    artifact = create_artifact(db, project_id, "outline", OutlineService().generate(project, list(project.documents)))
     project.status = "outline_ready"
     db.commit()
     return ApiResponse(data=artifact, message="目录已生成")
@@ -61,7 +61,7 @@ def outline(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[Artif
 @router.post("/review", response_model=ApiResponse[ArtifactRead])
 def review(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "review_report", ReviewService().generate())
+    artifact = create_artifact(db, project_id, "review_report", ReviewService().generate(project))
     project.status = "reviewed"
     db.commit()
     return ApiResponse(data=artifact, message="审稿建议已生成")
@@ -69,13 +69,13 @@ def review(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[Artifa
 
 @router.post("/qa", response_model=ApiResponse[ArtifactRead])
 def qa(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
-    require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "qa_report", QAService().generate())
+    project = require_project(db, project_id)
+    artifact = create_artifact(db, project_id, "qa_report", QAService().generate(project))
     return ApiResponse(data=artifact, message="专家问答已生成")
 
 
 @router.post("/script", response_model=ApiResponse[ArtifactRead])
 def script(project_id: int, duration: int = Query(default=20), db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
-    require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "script", ScriptService().generate(duration))
+    project = require_project(db, project_id)
+    artifact = create_artifact(db, project_id, "script", ScriptService().generate(duration, project))
     return ApiResponse(data=artifact, message="讲稿已生成")

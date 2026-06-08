@@ -232,8 +232,18 @@ export default function ProjectWorkspacePage() {
             </Panel>
           ) : null}
 
-          {activeTab === "review" ? <SimpleArtifact title="PPT审稿" button="生成审稿建议" busy={busy === "review"} onClick={() => run("review", "review")} content={review} /> : null}
-          {activeTab === "qa" ? <SimpleArtifact title="专家问答" button="生成专家问题" busy={busy === "qa"} onClick={() => run("qa", "qa")} content={qa} /> : null}
+          {activeTab === "review" ? (
+            <Panel title="PPT审稿">
+              <ActionButton busy={busy === "review"} onClick={() => run("review", "review")} label="生成审稿建议" />
+              <ReviewView content={review} />
+            </Panel>
+          ) : null}
+          {activeTab === "qa" ? (
+            <Panel title="专家问答">
+              <ActionButton busy={busy === "qa"} onClick={() => run("qa", "qa")} label="生成专家问题" />
+              <QAView content={qa} />
+            </Panel>
+          ) : null}
           {activeTab === "script" ? (
             <Panel title="讲稿">
               <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -244,7 +254,7 @@ export default function ProjectWorkspacePage() {
                 </select>
                 <ActionButton busy={busy === "script"} onClick={() => run("script", "script", `?duration=${scriptDuration}`)} label="生成讲稿" />
               </div>
-              <JsonView content={script} empty="尚未生成讲稿" />
+              <ScriptView content={script} />
             </Panel>
           ) : null}
         </section>
@@ -353,16 +363,87 @@ function EditableOutline({ outline }: { outline: OutlineContent | undefined }) {
   );
 }
 
-function SimpleArtifact({ title, button, busy, onClick, content }: { title: string; button: string; busy: boolean; onClick: () => void; content: Record<string, unknown> | undefined }) {
+function ReviewView({ content }: { content: Record<string, unknown> | undefined }) {
+  if (!content) return <EmptyState title="尚未生成审稿建议" description="点击按钮后会按学术性、逻辑、证据和视觉表达给出修改建议。" />;
+  const scores = [
+    ["学术性", content.academic_score],
+    ["逻辑性", content.logic_score],
+    ["证据支撑", content.evidence_score],
+    ["视觉表达", content.visual_score],
+  ];
   return (
-    <Panel title={title}>
-      <ActionButton busy={busy} onClick={onClick} label={button} />
-      <JsonView content={content} empty={`尚未${button}`} />
-    </Panel>
+    <div className="mt-5 space-y-4">
+      <div className="grid gap-3 sm:grid-cols-4">
+        {scores.map(([label, value]) => (
+          <Metric key={String(label)} label={String(label)} value={`${String(value || "-")}分`} />
+        ))}
+      </div>
+      <ListCard title="主要问题" items={asList(content.issues)} />
+      <ListCard title="修改建议" items={asList(content.suggestions)} />
+      <ListCard title="优先处理" items={asList(content.priority_fixes)} />
+    </div>
   );
 }
 
-function JsonView({ content, empty }: { content: Record<string, unknown> | undefined; empty: string }) {
-  if (!content) return <EmptyState title={empty} description="点击按钮后会保存对应 Artifact 并展示结果。" />;
-  return <pre className="mt-5 overflow-auto rounded-md bg-slate-900 p-4 text-sm leading-6 text-slate-100">{JSON.stringify(content, null, 2)}</pre>;
+function QAView({ content }: { content: Record<string, unknown> | undefined }) {
+  if (!content) return <EmptyState title="尚未生成专家问答" description="点击按钮后会生成主任、专家和方法学角度的追问。" />;
+  return (
+    <div className="mt-5 grid gap-3">
+      <ListCard title="主任可能会问" items={asList(content.director_questions)} />
+      <ListCard title="专家可能会问" items={asList(content.expert_questions)} />
+      <ListCard title="方法学追问" items={asList(content.methodology_questions)} />
+      <ListCard title="回答思路" items={asList(content.reference_answers)} />
+    </div>
+  );
+}
+
+function ScriptView({ content }: { content: Record<string, unknown> | undefined }) {
+  if (!content) return <EmptyState title="尚未生成讲稿" description="点击按钮后会按页生成讲稿、预计用时和转场句。" />;
+  const slides = Array.isArray(content.slides) ? content.slides : [];
+  return (
+    <div className="mt-5 space-y-4">
+      <div className="rounded-md border border-slate-200 p-4 text-sm">
+        <p className="font-medium text-slate-900">开场</p>
+        <p className="mt-2 leading-6 text-slate-600">{String(content.opening || "")}</p>
+      </div>
+      {slides.map((item, index) => {
+        const slide = item as Record<string, unknown>;
+        return (
+          <div key={index} className="rounded-md border border-slate-200 p-4 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-semibold text-slate-900">
+                {String(slide.slide_no || index + 1)}. {String(slide.title || "")}
+              </p>
+              <span className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">{String(slide.estimated_time || "")}</span>
+            </div>
+            <p className="mt-3 leading-6 text-slate-700">{String(slide.script || "")}</p>
+            <p className="mt-3 text-slate-500">转场：{String(slide.transition || "")}</p>
+          </div>
+        );
+      })}
+      <div className="rounded-md border border-slate-200 p-4 text-sm">
+        <p className="font-medium text-slate-900">结尾</p>
+        <p className="mt-2 leading-6 text-slate-600">{String(content.closing || "")}</p>
+      </div>
+    </div>
+  );
+}
+
+function ListCard({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-md border border-slate-200 p-4 text-sm">
+      <p className="font-medium text-slate-900">{title}</p>
+      {items.length ? (
+        <ul className="mt-2 space-y-2 text-slate-600">
+          {items.map((item, index) => (
+            <li key={index} className="leading-6">
+              {item}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-slate-500">暂无内容</p>
+      )}
+    </div>
+  );
 }
