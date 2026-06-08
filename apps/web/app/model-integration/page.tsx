@@ -42,6 +42,7 @@ export default function ModelIntegrationPage() {
 
   const providers = status?.providers || fallbackProviders;
   const selectedProvider = providers[provider] || fallbackProviders.bailian;
+  const canSave = Boolean(apiKey.trim() || status?.api_key_configured);
 
   useEffect(() => {
     loadStatus();
@@ -169,7 +170,7 @@ export default function ModelIntegrationPage() {
             </label>
 
             <div className="flex flex-wrap gap-3">
-              <button className="btn-primary" onClick={saveConfig} disabled={busy === "save" || !apiKey.trim()}>
+              <button className="btn-primary" onClick={saveConfig} disabled={busy === "save" || !canSave}>
                 {busy === "save" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 保存配置
               </button>

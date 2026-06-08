@@ -71,8 +71,9 @@ class LLMService:
     def save_config(self, api_key: str, provider: str, model: str, base_url: str | None = None) -> dict[str, Any]:
         provider_key = provider if provider in LLM_PROVIDERS else "bailian"
         provider_config = LLM_PROVIDERS[provider_key]
+        next_api_key = api_key.strip() or self.api_key
         data = {
-            "api_key": api_key.strip(),
+            "api_key": next_api_key,
             "provider": provider_key,
             "model": model.strip() or str(provider_config["default_model"]),
             "base_url": (base_url or "").strip() or str(provider_config["base_url"]),

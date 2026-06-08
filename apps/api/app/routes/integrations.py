@@ -12,7 +12,7 @@ router = APIRouter(prefix="/integrations", tags=["integrations"])
 
 
 class LLMConfigUpdate(BaseModel):
-    api_key: str
+    api_key: str = ""
     provider: str = "bailian"
     model: str = "qwen-plus"
     base_url: str | None = None
