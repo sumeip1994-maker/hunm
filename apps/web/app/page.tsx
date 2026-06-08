@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, PlugZap, Plus } from "lucide-react";
 
 import { EmptyState } from "@/components/EmptyState";
 import { presentationTypeLabels } from "@/components/labels";
@@ -31,10 +31,16 @@ export default function DashboardPage() {
           <h1 className="mt-2 text-3xl font-semibold tracking-normal text-clinical-900">医学学术汇报工作台</h1>
           <p className="mt-3 text-slate-600">从资料到PPT，一站式完成医学学术汇报</p>
         </div>
-        <Link href="/projects/new" className="btn-primary">
-          <Plus className="h-4 w-4" />
-          新建项目
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/model-integration" className="btn-secondary">
+            <PlugZap className="h-4 w-4" />
+            模型接入
+          </Link>
+          <Link href="/projects/new" className="btn-primary">
+            <Plus className="h-4 w-4" />
+            新建项目
+          </Link>
+        </div>
       </header>
 
       {error ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./medical_presentation.db"
     upload_dir: str = "../../data/uploads"
     output_dir: str = "../../data/outputs"
+    llm_config_path: str = "../../data/llm_config.json"
     max_upload_size_mb: int = 50
     cors_origins: str = "http://localhost:3000"
     dashscope_api_key: str = ""
@@ -27,6 +28,12 @@ class Settings(BaseSettings):
     def output_path(self) -> Path:
         path = Path(self.output_dir).resolve()
         path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def llm_config_file(self) -> Path:
+        path = Path(self.llm_config_path).resolve()
+        path.parent.mkdir(parents=True, exist_ok=True)
         return path
 
     @property

@@ -63,3 +63,9 @@ export interface LLMTestResult {
   model: string;
   base_url: string;
 }
+
+export interface LLMConfigInput {
+  api_key: string;
+  model: string;
+  base_url: string;
+}

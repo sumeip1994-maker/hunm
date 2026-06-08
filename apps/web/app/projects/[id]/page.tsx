@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Bot, Download, FileUp, Loader2, PlugZap, Plus, Sparkles, Trash2 } from "lucide-react";
 
@@ -8,9 +9,9 @@ import { EmptyState } from "@/components/EmptyState";
 import { presentationTypeLabels } from "@/components/labels";
 import { StatusBadge } from "@/components/StatusBadge";
 import { api, apiBaseUrl } from "@/lib/api/client";
-import type { Artifact, DocumentItem, LLMStatus, LLMTestResult, Project } from "@/types";
+import type { Artifact, DocumentItem, Project } from "@/types";
 
-type TabKey = "overview" | "documents" | "analysis" | "planning" | "ppt" | "review" | "qa" | "script" | "integration";
+type TabKey = "overview" | "documents" | "analysis" | "planning" | "ppt" | "review" | "qa" | "script";
 
 interface OutlineContent {
   sections: { title: string; level: number }[];
@@ -24,8 +25,7 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "ppt", label: "PPT生成" },
   { key: "review", label: "PPT审稿" },
   { key: "qa", label: "专家问答" },
-  { key: "script", label: "讲稿" },
-  { key: "integration", label: "模型接入" }
+  { key: "script", label: "讲稿" }
 ];
 
 function asList(value: unknown): string[] {
@@ -44,8 +44,6 @@ export default function ProjectWorkspacePage() {
   const [error, setError] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [scriptDuration, setScriptDuration] = useState(20);
-  const [llmStatus, setLlmStatus] = useState<LLMStatus | null>(null);
-  const [llmTest, setLlmTest] = useState<LLMTestResult | null>(null);
 
   const latest = useMemo(() => {
     const map = new Map<string, Artifact>();
@@ -112,32 +110,6 @@ export default function ProjectWorkspacePage() {
     }
   }
 
-  async function loadLLMStatus() {
-    setBusy("llm-status");
-    setError("");
-    try {
-      setLlmStatus(await api.getLLMStatus());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "接入状态读取失败");
-    } finally {
-      setBusy("");
-    }
-  }
-
-  async function testLLM() {
-    setBusy("llm-test");
-    setError("");
-    try {
-      const result = await api.testLLM();
-      setLlmTest(result);
-      setLlmStatus(await api.getLLMStatus());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "大模型连通性测试失败");
-    } finally {
-      setBusy("");
-    }
-  }
-
   if (loading) return <main className="min-h-screen p-8 text-sm text-slate-500">正在加载项目工作区...</main>;
   if (!project) return <main className="min-h-screen p-8 text-sm text-red-700">项目不存在或加载失败</main>;
 
@@ -159,7 +131,13 @@ export default function ProjectWorkspacePage() {
               {presentationTypeLabels[project.presentation_type]} · {project.audience} · {project.duration_minutes}分钟
             </p>
           </div>
-          <StatusBadge status={project.status} />
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/model-integration" className="btn-secondary">
+              <PlugZap className="h-4 w-4" />
+              模型接入
+            </Link>
+            <StatusBadge status={project.status} />
+          </div>
         </div>
       </header>
 
@@ -284,21 +262,6 @@ export default function ProjectWorkspacePage() {
                 <ActionButton busy={busy === "script"} onClick={() => run("script", "script", `?duration=${scriptDuration}`)} label="生成讲稿" />
               </div>
               <ScriptView content={script} />
-            </Panel>
-          ) : null}
-          {activeTab === "integration" ? (
-            <Panel title="模型接入">
-              <div className="flex flex-wrap gap-3">
-                <button className="btn-secondary" onClick={loadLLMStatus} disabled={busy === "llm-status"}>
-                  {busy === "llm-status" ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlugZap className="h-4 w-4" />}
-                  读取接入状态
-                </button>
-                <button className="btn-primary" onClick={testLLM} disabled={busy === "llm-test"}>
-                  {busy === "llm-test" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  测试连通性
-                </button>
-              </div>
-              <LLMIntegrationView status={llmStatus} result={llmTest} />
             </Panel>
           ) : null}
         </section>
@@ -488,32 +451,6 @@ function ListCard({ title, items }: { title: string; items: string[] }) {
       ) : (
         <p className="mt-2 text-slate-500">暂无内容</p>
       )}
-    </div>
-  );
-}
-
-function LLMIntegrationView({ status, result }: { status: LLMStatus | null; result: LLMTestResult | null }) {
-  return (
-    <div className="mt-5 space-y-4">
-      <div className="rounded-md border border-slate-200 p-4 text-sm">
-        <p className="font-medium text-slate-900">接入方式</p>
-        <p className="mt-2 leading-6 text-slate-600">当前后端已开放大模型接入口：/integrations/llm/status 和 /integrations/llm/test。</p>
-        <p className="mt-2 leading-6 text-slate-600">API Key 只在服务器环境变量中配置，不在公网网页中输入或展示。</p>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Metric label="接入状态" value={status ? (status.enabled ? "已配置" : "未配置") : "未读取"} />
-        <Metric label="模型" value={status?.model || "-"} />
-      </div>
-      <div className="rounded-md border border-slate-200 p-4 text-sm">
-        <p className="font-medium text-slate-900">模型服务地址</p>
-        <p className="mt-2 break-all text-slate-600">{status?.base_url || "点击读取接入状态后显示"}</p>
-      </div>
-      {result ? (
-        <div className={`rounded-md border p-4 text-sm ${result.ok ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
-          <p className="font-medium">{result.ok ? "连通成功" : "尚未连通"}</p>
-          <p className="mt-2">{result.message}</p>
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { ApiResponse, Artifact, DocumentItem, LLMStatus, LLMTestResult, Project } from "@/types";
+import type { ApiResponse, Artifact, DocumentItem, LLMConfigInput, LLMStatus, LLMTestResult, Project } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
@@ -37,5 +37,7 @@ export const api = {
   generatePpt: (projectId: number) =>
     request<{ download_url: string; filename: string }>(`/projects/${projectId}/ppt`, { method: "POST" }),
   getLLMStatus: () => request<LLMStatus>("/integrations/llm/status"),
+  saveLLMConfig: (data: LLMConfigInput) =>
+    request<LLMStatus>("/integrations/llm/config", { method: "PUT", body: JSON.stringify(data) }),
   testLLM: () => request<LLMTestResult>("/integrations/llm/test", { method: "POST" })
 };

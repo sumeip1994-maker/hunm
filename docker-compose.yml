@@ -7,6 +7,7 @@ services:
       DATABASE_URL: sqlite:////app/data/medical_presentation.db
       UPLOAD_DIR: /app/data/uploads
       OUTPUT_DIR: /app/data/outputs
+      LLM_CONFIG_PATH: /app/data/llm_config.json
       MAX_UPLOAD_SIZE_MB: 50
       CORS_ORIGINS: http://localhost:3000
       DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
