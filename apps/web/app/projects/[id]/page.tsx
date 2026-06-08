@@ -255,7 +255,7 @@ export default function ProjectWorkspacePage() {
             <h2 className="font-semibold">AI 助手提示</h2>
           </div>
           <div className="mt-4 space-y-3 text-sm text-slate-600">
-            <p>当前版本使用 mock 数据，不连接真实模型。</p>
+            <p>已支持阿里云百炼接入；未配置密钥时会使用 mock 数据。</p>
             <p>建议先补齐资料，再依次生成分析、方向、目录和PPT。</p>
             <p>请确保病例资料完成脱敏，不在汇报中输出诊疗决策建议。</p>
           </div>

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.config import Settings, get_settings
 from app.database import get_db
 from app.models import Project
 from app.schemas import ApiResponse, ArtifactRead
@@ -24,9 +25,18 @@ def require_project(db: Session, project_id: int) -> Project:
 
 
 @router.post("/analyze", response_model=ApiResponse[ArtifactRead])
-def analyze(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
+def analyze(
+    project_id: int,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "analysis_report", AnalysisService().generate())
+    artifact = create_artifact(
+        db,
+        project_id,
+        "analysis_report",
+        AnalysisService(settings).generate(project, list(project.documents)),
+    )
     project.status = "analyzed"
     db.commit()
     return ApiResponse(data=artifact, message="AI分析已生成")

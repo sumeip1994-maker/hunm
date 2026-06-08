@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     output_dir: str = "../../data/outputs"
     max_upload_size_mb: int = 50
     cors_origins: str = "http://localhost:3000"
+    dashscope_api_key: str = ""
+    llm_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    llm_model: str = "qwen-plus"
+    llm_timeout_seconds: int = 60
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
