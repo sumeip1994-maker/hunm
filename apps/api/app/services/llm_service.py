@@ -41,6 +41,19 @@ LLM_PROVIDERS: dict[str, dict[str, Any]] = {
         "default_model": "doubao-seed-1-6",
         "models": ["doubao-seed-1-6", "doubao-seed-1-6-thinking", "deepseek-v3", "deepseek-r1"],
     },
+    "volcengine_coding": {
+        "label": "火山方舟 Coding Plan",
+        "base_url": "https://ark.cn-beijing.volces.com/api/coding/v3",
+        "default_model": "ark-code-latest",
+        "models": [
+            "ark-code-latest",
+            "doubao-seed-code",
+            "doubao-seed-2.0-code",
+            "deepseek-v3.2",
+            "kimi-k2.5",
+            "glm-4.7",
+        ],
+    },
 }
 
 
