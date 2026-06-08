@@ -12,6 +12,23 @@ LLM_PROVIDERS: dict[str, dict[str, Any]] = {
         "default_model": "qwen-plus",
         "models": ["qwen3.7-plus", "qwen-plus", "qwen-max", "qwen-turbo", "qwen-long"],
     },
+    "bailian_coding": {
+        "label": "阿里云百炼 Coding Plan",
+        "base_url": "https://coding.dashscope.aliyuncs.com/v1",
+        "default_model": "qwen3.7-plus",
+        "models": [
+            "qwen3.7-plus",
+            "qwen3.6-plus",
+            "kimi-k2.5",
+            "glm-5",
+            "MiniMax-M2.5",
+            "qwen3.5-plus",
+            "qwen3-max-2026-01-23",
+            "qwen3-coder-next",
+            "qwen3-coder-plus",
+            "glm-4.7",
+        ],
+    },
     "deepseek": {
         "label": "DeepSeek",
         "base_url": "https://api.deepseek.com",
@@ -72,6 +89,9 @@ class LLMService:
         provider_key = provider if provider in LLM_PROVIDERS else "bailian"
         provider_config = LLM_PROVIDERS[provider_key]
         next_api_key = api_key.strip() or self.api_key
+        if next_api_key.startswith("sk-sp-") and provider_key == "bailian":
+            provider_key = "bailian_coding"
+            provider_config = LLM_PROVIDERS[provider_key]
         data = {
             "api_key": next_api_key,
             "provider": provider_key,

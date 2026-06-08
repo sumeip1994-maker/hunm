@@ -14,6 +14,12 @@ const fallbackProviders: Record<string, LLMProvider> = {
     default_model: "qwen-plus",
     models: ["qwen3.7-plus", "qwen-plus", "qwen-max", "qwen-turbo", "qwen-long"],
   },
+  bailian_coding: {
+    label: "阿里云百炼 Coding Plan",
+    base_url: "https://coding.dashscope.aliyuncs.com/v1",
+    default_model: "qwen3.7-plus",
+    models: ["qwen3.7-plus", "qwen3.6-plus", "kimi-k2.5", "glm-5", "MiniMax-M2.5", "qwen3.5-plus", "qwen3-max-2026-01-23", "qwen3-coder-next", "qwen3-coder-plus", "glm-4.7"],
+  },
   deepseek: {
     label: "DeepSeek",
     base_url: "https://api.deepseek.com",
@@ -69,8 +75,14 @@ export default function ModelIntegrationPage() {
     setError("");
     setSaved("");
     try {
-      const data = await api.saveLLMConfig({ api_key: apiKey, provider, model, base_url: baseUrl });
+      const nextProvider = apiKey.trim().startsWith("sk-sp-") && provider === "bailian" ? "bailian_coding" : provider;
+      const nextProviderConfig = providers[nextProvider] || fallbackProviders.bailian;
+      const nextModel = nextProvider === provider ? model : nextProviderConfig.default_model;
+      const data = await api.saveLLMConfig({ api_key: apiKey, provider: nextProvider, model: nextModel, base_url: nextProviderConfig.base_url });
       setStatus(data);
+      setProvider(data.provider || nextProvider);
+      setModel(data.model || nextModel);
+      setBaseUrl(data.base_url || nextProviderConfig.base_url);
       setSaved("API Key 已保存到服务器。");
       setApiKey("");
     } catch (err) {
