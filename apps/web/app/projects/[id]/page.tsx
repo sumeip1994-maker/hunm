@@ -43,6 +43,7 @@ export default function ProjectWorkspacePage() {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [workflowMessage, setWorkflowMessage] = useState("");
   const [scriptDuration, setScriptDuration] = useState(20);
 
   const latest = useMemo(() => {
@@ -110,6 +111,22 @@ export default function ProjectWorkspacePage() {
     }
   }
 
+  async function runWorkflow() {
+    setBusy("workflow");
+    setError("");
+    setWorkflowMessage("");
+    try {
+      const result = await api.runWorkflow(projectId, scriptDuration);
+      setDownloadUrl(`${apiBaseUrl}${result.ppt.download_url}`);
+      setWorkflowMessage(`已完成：${result.steps.map((step) => step.label).join("、")}`);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "完整工作流生成失败");
+    } finally {
+      setBusy("");
+    }
+  }
+
   if (loading) return <main className="min-h-screen p-8 text-sm text-slate-500">正在加载项目工作区...</main>;
   if (!project) return <main className="min-h-screen p-8 text-sm text-red-700">项目不存在或加载失败</main>;
 
@@ -159,9 +176,22 @@ export default function ProjectWorkspacePage() {
                 <Metric label="已生成Artifact" value={String(artifacts.length)} />
                 <Metric label="当前状态" value={project.status} />
               </div>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <button className="btn-primary" onClick={runWorkflow} disabled={busy === "workflow"}>
+                  {busy === "workflow" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {busy === "workflow" ? "正在生成完整工作流..." : "一键生成完整工作流"}
+                </button>
+                {downloadUrl ? (
+                  <a className="btn-secondary" href={downloadUrl}>
+                    <Download className="h-4 w-4" />
+                    下载PPTX
+                  </a>
+                ) : null}
+              </div>
+              {workflowMessage ? <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{workflowMessage}</div> : null}
               <div className="mt-5 rounded-md bg-slate-50 p-4 text-sm text-slate-700">
                 <p className="font-medium text-slate-900">下一步建议</p>
-                <p className="mt-2">先上传病例、文献或已有PPT，再进入 AI分析 生成资料摘要和汇报重点。</p>
+                <p className="mt-2">上传病例、文献或已有PPT后，可一键生成分析、方向、目录、PPT、审稿、问答和讲稿。</p>
                 <p className="mt-2">核心问题：{project.core_question}</p>
               </div>
             </Panel>

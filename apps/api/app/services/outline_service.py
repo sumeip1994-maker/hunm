@@ -1,10 +1,20 @@
 from typing import Any
 
+from app.config import Settings
 from app.models import Document, Project
+from app.services.llm_service import LLMService
 
 
 class OutlineService:
+    def __init__(self, settings: Settings | None = None):
+        self.settings = settings
+
     def generate(self, project: Project | None = None, documents: list[Document] | None = None) -> dict[str, Any]:
+        if self.settings and project:
+            llm_result = self._generate_with_llm(project, documents or [])
+            if llm_result:
+                return llm_result
+
         core_question = project.core_question if project else ""
         doc_count = len(documents or [])
         sections = [
@@ -26,6 +36,46 @@ class OutlineService:
             ],
         }
 
+    def _generate_with_llm(self, project: Project, documents: list[Document]) -> dict[str, Any] | None:
+        docs_text = "\n\n".join(
+            f"文件名: {document.original_filename}\n类型: {document.file_type}\n内容摘要:\n{document.parsed_text[:2500]}"
+            for document in documents
+        ) or "尚未上传资料。"
+        result = LLMService(self.settings).chat_json(
+            "你是医学学术汇报目录策划助手。只输出严格 JSON，不输出诊疗建议。",
+            f"""
+请生成适合 {project.duration_minutes} 分钟医学学术汇报的目录，输出 JSON：
+sections: 数组，每项包含 title、level、goal。
+notes: 字符串数组。
+目录控制在 6 到 9 个章节，标题要具体，围绕核心问题组织。
+
+项目名称：{project.title}
+汇报类型：{project.presentation_type}
+目标听众：{project.audience}
+核心问题：{project.core_question}
+
+资料：
+{docs_text}
+""",
+        )
+        if not result:
+            return None
+        sections = result.get("sections")
+        if not isinstance(sections, list):
+            return None
+        normalized = []
+        for item in sections[:9]:
+            if not isinstance(item, dict):
+                continue
+            normalized.append(
+                {
+                    "title": str(item.get("title", "")),
+                    "level": int(item.get("level") or 1),
+                    "goal": str(item.get("goal", "")),
+                }
+            )
+        return {"sections": normalized, "notes": self._as_str_list(result.get("notes"))} if normalized else None
+
     def _goal_for(self, title: str) -> str:
         if "核心问题" in title:
             return "让听众明确本次汇报要回答什么。"
@@ -36,3 +86,10 @@ class OutlineService:
         if "结论" in title:
             return "收束观点，给出可继续完善的方向。"
         return "支撑汇报叙事。"
+
+    def _as_str_list(self, value: Any) -> list[str]:
+        if isinstance(value, list):
+            return [str(item) for item in value if str(item).strip()]
+        if value:
+            return [str(value)]
+        return []

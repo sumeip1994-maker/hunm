@@ -1,10 +1,20 @@
 from typing import Any
 
+from app.config import Settings
 from app.models import Project
+from app.services.llm_service import LLMService
 
 
 class QAService:
+    def __init__(self, settings: Settings | None = None):
+        self.settings = settings
+
     def generate(self, project: Project | None = None) -> dict[str, Any]:
+        if self.settings and project:
+            llm_result = self._generate_with_llm(project)
+            if llm_result:
+                return llm_result
+
         core_question = project.core_question if project else "本次汇报的核心问题"
         return {
             "director_questions": [
@@ -27,3 +37,36 @@ class QAService:
                 "对专家追问可采用“证据来源、适用范围、局限性、后续计划”的顺序回答。",
             ],
         }
+
+    def _generate_with_llm(self, project: Project) -> dict[str, Any] | None:
+        result = LLMService(self.settings).chat_json(
+            "你是医学学术会议问答准备助手。只输出严格 JSON，回答应强调证据边界和脱敏。",
+            f"""
+请为该医学学术汇报生成答辩准备，输出 JSON：
+director_questions: 字符串数组
+expert_questions: 字符串数组
+methodology_questions: 字符串数组
+reference_answers: 字符串数组
+
+项目名称：{project.title}
+汇报类型：{project.presentation_type}
+目标听众：{project.audience}
+预计时长：{project.duration_minutes}分钟
+核心问题：{project.core_question}
+""",
+        )
+        if not result:
+            return None
+        return {
+            "director_questions": self._as_str_list(result.get("director_questions")),
+            "expert_questions": self._as_str_list(result.get("expert_questions")),
+            "methodology_questions": self._as_str_list(result.get("methodology_questions")),
+            "reference_answers": self._as_str_list(result.get("reference_answers")),
+        }
+
+    def _as_str_list(self, value: Any) -> list[str]:
+        if isinstance(value, list):
+            return [str(item) for item in value if str(item).strip()]
+        if value:
+            return [str(value)]
+        return []

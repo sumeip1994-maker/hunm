@@ -1,10 +1,20 @@
 from typing import Any
 
+from app.config import Settings
 from app.models import Project
+from app.services.llm_service import LLMService
 
 
 class ScriptService:
+    def __init__(self, settings: Settings | None = None):
+        self.settings = settings
+
     def generate(self, duration: int, project: Project | None = None) -> dict[str, Any]:
+        if self.settings and project:
+            llm_result = self._generate_with_llm(duration, project)
+            if llm_result:
+                return llm_result
+
         minutes = duration if duration in (10, 20, 30) else 20
         title = project.title if project else "本次汇报"
         core_question = project.core_question if project else "核心问题"
@@ -19,4 +29,46 @@ class ScriptService:
                 {"slide_no": 5, "title": "总结", "script": f"回到“{core_question}”，用三句话总结：第一，已有资料支持什么；第二，仍然不确定什么；第三，后续还需要补充什么证据或讨论。", "estimated_time": "2分钟", "transition": "我的汇报到这里，欢迎各位老师批评指正。"},
             ],
             "closing": "我的汇报到此结束，感谢各位老师。欢迎从证据充分性、适用范围和后续补充资料三个角度提出建议。",
+        }
+
+    def _generate_with_llm(self, duration: int, project: Project) -> dict[str, Any] | None:
+        minutes = duration if duration in (10, 20, 30) else 20
+        result = LLMService(self.settings).chat_json(
+            "你是医学学术汇报讲稿助手。只输出严格 JSON，语言口语化、克制，避免诊疗指令。",
+            f"""
+请生成 {minutes} 分钟医学学术汇报讲稿，输出 JSON：
+duration_minutes: 数字
+opening: 字符串
+slides: 数组，每项包含 slide_no、title、script、estimated_time、transition
+closing: 字符串
+
+项目名称：{project.title}
+汇报类型：{project.presentation_type}
+目标听众：{project.audience}
+核心问题：{project.core_question}
+""",
+        )
+        if not result:
+            return None
+        slides = result.get("slides")
+        if not isinstance(slides, list):
+            return None
+        normalized = []
+        for index, item in enumerate(slides[:12], start=1):
+            if not isinstance(item, dict):
+                continue
+            normalized.append(
+                {
+                    "slide_no": int(item.get("slide_no") or index),
+                    "title": str(item.get("title", "")),
+                    "script": str(item.get("script", "")),
+                    "estimated_time": str(item.get("estimated_time", "")),
+                    "transition": str(item.get("transition", "")),
+                }
+            )
+        return {
+            "duration_minutes": minutes,
+            "opening": str(result.get("opening", "")),
+            "slides": normalized,
+            "closing": str(result.get("closing", "")),
         }

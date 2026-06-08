@@ -34,6 +34,8 @@ export const api = {
   listArtifacts: (projectId: number) => request<Artifact[]>(`/projects/${projectId}/artifacts`),
   runArtifact: <T>(projectId: number, action: string, query = "") =>
     request<Artifact<T>>(`/projects/${projectId}/${action}${query}`, { method: "POST" }),
+  runWorkflow: (projectId: number, duration = 20) =>
+    request<{ steps: { key: string; label: string }[]; ppt: { download_url: string; filename: string } }>(`/projects/${projectId}/workflow?duration=${duration}`, { method: "POST" }),
   generatePpt: (projectId: number) =>
     request<{ download_url: string; filename: string }>(`/projects/${projectId}/ppt`, { method: "POST" }),
   getLLMStatus: () => request<LLMStatus>("/integrations/llm/status"),

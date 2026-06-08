@@ -9,6 +9,7 @@ from app.services.analysis_service import AnalysisService
 from app.services.artifact_service import create_artifact
 from app.services.direction_service import DirectionService
 from app.services.outline_service import OutlineService
+from app.services.ppt_service import PPTService
 from app.services.qa_service import QAService
 from app.services.review_service import ReviewService
 from app.services.script_service import ScriptService
@@ -43,39 +44,92 @@ def analyze(
 
 
 @router.post("/directions", response_model=ApiResponse[ArtifactRead])
-def directions(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
+def directions(
+    project_id: int,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "direction_recommendation", DirectionService().generate(project, list(project.documents)))
+    artifact = create_artifact(db, project_id, "direction_recommendation", DirectionService(settings).generate(project, list(project.documents)))
     return ApiResponse(data=artifact, message="汇报方向已生成")
 
 
 @router.post("/outline", response_model=ApiResponse[ArtifactRead])
-def outline(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
+def outline(
+    project_id: int,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "outline", OutlineService().generate(project, list(project.documents)))
+    artifact = create_artifact(db, project_id, "outline", OutlineService(settings).generate(project, list(project.documents)))
     project.status = "outline_ready"
     db.commit()
     return ApiResponse(data=artifact, message="目录已生成")
 
 
 @router.post("/review", response_model=ApiResponse[ArtifactRead])
-def review(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
+def review(
+    project_id: int,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "review_report", ReviewService().generate(project))
+    artifact = create_artifact(db, project_id, "review_report", ReviewService(settings).generate(project))
     project.status = "reviewed"
     db.commit()
     return ApiResponse(data=artifact, message="审稿建议已生成")
 
 
 @router.post("/qa", response_model=ApiResponse[ArtifactRead])
-def qa(project_id: int, db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
+def qa(
+    project_id: int,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "qa_report", QAService().generate(project))
+    artifact = create_artifact(db, project_id, "qa_report", QAService(settings).generate(project))
     return ApiResponse(data=artifact, message="专家问答已生成")
 
 
 @router.post("/script", response_model=ApiResponse[ArtifactRead])
-def script(project_id: int, duration: int = Query(default=20), db: Session = Depends(get_db)) -> ApiResponse[ArtifactRead]:
+def script(
+    project_id: int,
+    duration: int = Query(default=20),
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ApiResponse[ArtifactRead]:
     project = require_project(db, project_id)
-    artifact = create_artifact(db, project_id, "script", ScriptService().generate(duration, project))
+    artifact = create_artifact(db, project_id, "script", ScriptService(settings).generate(duration, project))
     return ApiResponse(data=artifact, message="讲稿已生成")
+
+
+@router.post("/workflow", response_model=ApiResponse[dict[str, object]])
+def workflow(
+    project_id: int,
+    duration: int = Query(default=20),
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ApiResponse[dict[str, object]]:
+    project = require_project(db, project_id)
+    documents = list(project.documents)
+    steps: list[dict[str, str]] = []
+
+    create_artifact(db, project_id, "analysis_report", AnalysisService(settings).generate(project, documents))
+    steps.append({"key": "analysis", "label": "AI分析"})
+    create_artifact(db, project_id, "direction_recommendation", DirectionService(settings).generate(project, documents))
+    steps.append({"key": "directions", "label": "汇报方向"})
+    create_artifact(db, project_id, "outline", OutlineService(settings).generate(project, documents))
+    steps.append({"key": "outline", "label": "目录"})
+
+    ppt_result = PPTService().generate(db, settings, project)
+    steps.append({"key": "ppt", "label": "PPT生成"})
+    create_artifact(db, project_id, "review_report", ReviewService(settings).generate(project))
+    steps.append({"key": "review", "label": "PPT审稿"})
+    create_artifact(db, project_id, "qa_report", QAService(settings).generate(project))
+    steps.append({"key": "qa", "label": "专家问答"})
+    create_artifact(db, project_id, "script", ScriptService(settings).generate(duration, project))
+    steps.append({"key": "script", "label": "讲稿"})
+
+    project.status = "reviewed"
+    db.commit()
+    return ApiResponse(data={"steps": steps, "ppt": ppt_result}, message="完整工作流已完成")
