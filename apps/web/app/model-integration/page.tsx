@@ -12,7 +12,7 @@ const fallbackProviders: Record<string, LLMProvider> = {
     label: "阿里云百炼",
     base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     default_model: "qwen-plus",
-    models: ["qwen-plus", "qwen-max", "qwen-turbo", "qwen-long"],
+    models: ["qwen3.7-plus", "qwen-plus", "qwen-max", "qwen-turbo", "qwen-long"],
   },
   deepseek: {
     label: "DeepSeek",
