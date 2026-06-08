@@ -52,9 +52,11 @@ export interface ApiResponse<T> {
 export interface LLMStatus {
   enabled: boolean;
   provider: string;
+  provider_label: string;
   model: string;
   base_url: string;
   api_key_configured: boolean;
+  providers: Record<string, LLMProvider>;
 }
 
 export interface LLMTestResult {
@@ -66,6 +68,14 @@ export interface LLMTestResult {
 
 export interface LLMConfigInput {
   api_key: string;
+  provider: string;
   model: string;
+  base_url?: string;
+}
+
+export interface LLMProvider {
+  label: string;
   base_url: string;
+  default_model: string;
+  models: string[];
 }

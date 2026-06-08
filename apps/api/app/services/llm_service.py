@@ -5,6 +5,28 @@ from urllib import error, request
 from app.config import Settings
 
 
+LLM_PROVIDERS: dict[str, dict[str, Any]] = {
+    "bailian": {
+        "label": "阿里云百炼",
+        "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "default_model": "qwen-plus",
+        "models": ["qwen-plus", "qwen-max", "qwen-turbo", "qwen-long"],
+    },
+    "deepseek": {
+        "label": "DeepSeek",
+        "base_url": "https://api.deepseek.com",
+        "default_model": "deepseek-chat",
+        "models": ["deepseek-chat", "deepseek-reasoner"],
+    },
+    "volcengine": {
+        "label": "火山方舟",
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "default_model": "doubao-seed-1-6",
+        "models": ["doubao-seed-1-6", "doubao-seed-1-6-thinking", "deepseek-v3", "deepseek-r1"],
+    },
+}
+
+
 class LLMService:
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -19,27 +41,41 @@ class LLMService:
         return str(self.config.get("api_key") or self.settings.dashscope_api_key).strip()
 
     @property
+    def provider(self) -> str:
+        provider = str(self.config.get("provider") or "bailian").strip()
+        return provider if provider in LLM_PROVIDERS else "bailian"
+
+    @property
+    def provider_config(self) -> dict[str, Any]:
+        return LLM_PROVIDERS[self.provider]
+
+    @property
     def base_url(self) -> str:
-        return str(self.config.get("base_url") or self.settings.llm_base_url).strip()
+        return str(self.config.get("base_url") or self.provider_config["base_url"]).strip()
 
     @property
     def model(self) -> str:
-        return str(self.config.get("model") or self.settings.llm_model).strip()
+        return str(self.config.get("model") or self.provider_config["default_model"]).strip()
 
     def status(self) -> dict[str, Any]:
         return {
             "enabled": self.enabled,
-            "provider": "aliyun-bailian-compatible",
+            "provider": self.provider,
+            "provider_label": self.provider_config["label"],
             "model": self.model,
             "base_url": self.base_url,
             "api_key_configured": self.enabled,
+            "providers": LLM_PROVIDERS,
         }
 
-    def save_config(self, api_key: str, model: str, base_url: str) -> dict[str, Any]:
+    def save_config(self, api_key: str, provider: str, model: str, base_url: str | None = None) -> dict[str, Any]:
+        provider_key = provider if provider in LLM_PROVIDERS else "bailian"
+        provider_config = LLM_PROVIDERS[provider_key]
         data = {
             "api_key": api_key.strip(),
-            "model": model.strip() or self.settings.llm_model,
-            "base_url": base_url.strip() or self.settings.llm_base_url,
+            "provider": provider_key,
+            "model": model.strip() or str(provider_config["default_model"]),
+            "base_url": (base_url or "").strip() or str(provider_config["base_url"]),
         }
         self.settings.llm_config_file.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         self.config = data
