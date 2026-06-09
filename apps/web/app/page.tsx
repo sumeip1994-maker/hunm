@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Bell,
   BookOpenCheck,
@@ -147,13 +147,41 @@ function projectProgress(project: Project) {
 }
 
 export default function DashboardPage() {
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginName, setLoginName] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    loadProjects();
+    const savedUser = window.localStorage.getItem("mps_user");
+    setIsLoggedIn(savedUser === "admin");
+    setAuthChecked(true);
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) loadProjects();
+  }, [isLoggedIn]);
+
+  function login(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (loginName.trim() === "admin" && loginPassword === "admin") {
+      window.localStorage.setItem("mps_user", "admin");
+      setIsLoggedIn(true);
+      setLoginError("");
+      return;
+    }
+    setLoginError("账号或密码不正确");
+  }
+
+  function logout() {
+    window.localStorage.removeItem("mps_user");
+    setIsLoggedIn(false);
+    setProjects([]);
+  }
 
   async function loadProjects() {
     setLoading(true);
@@ -180,6 +208,42 @@ export default function DashboardPage() {
 
   const recentProjects = useMemo(() => projects.slice(0, 4), [projects]);
   const featuredProject = recentProjects[0];
+
+  if (!authChecked) {
+    return <main className="min-h-screen bg-[#f7f8fe] p-8 text-sm text-slate-500">正在检查登录状态...</main>;
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#f7f8fe] px-6 text-slate-950">
+        <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-violet-100/60">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7c5cff] to-[#4d35d9] text-white shadow-lg shadow-violet-200">
+              <Boxes className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-lg font-bold tracking-normal">Medical Presentation Studio</p>
+              <p className="text-sm text-slate-500">终端管理账号登录</p>
+            </div>
+          </div>
+          <form className="mt-8 space-y-4" onSubmit={login}>
+            <div>
+              <label className="text-sm font-semibold text-slate-700">账号</label>
+              <input className="mt-2 h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-[#7c5cff] focus:ring-4 focus:ring-violet-100" value={loginName} onChange={(event) => setLoginName(event.target.value)} placeholder="admin" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-slate-700">密码</label>
+              <input className="mt-2 h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-[#7c5cff] focus:ring-4 focus:ring-violet-100" type="password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} placeholder="admin" />
+            </div>
+            {loginError ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{loginError}</p> : null}
+            <button className="flex h-12 w-full items-center justify-center rounded-lg bg-[#6236df] text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:bg-[#4f28c8]" type="submit">
+              登录进入首页
+            </button>
+          </form>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#f7f8fe] text-slate-950">
@@ -254,13 +318,13 @@ export default function DashboardPage() {
                 <Bell className="h-5 w-5" />
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">3</span>
               </button>
-              <div className="relative">
+              <div className="group relative">
                 <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 text-sm font-semibold text-slate-700">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-violet-100 text-sm font-bold text-[#6236df]">张</span>
                   张医生
                   <ChevronDown className="h-4 w-4 text-slate-400" />
                 </button>
-                <div className="absolute right-0 top-12 w-48 rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-200/70">
+                <div className="invisible absolute right-0 top-12 z-30 w-48 rounded-xl border border-slate-200 bg-white p-2 opacity-0 shadow-xl shadow-slate-200/70 transition group-hover:visible group-hover:opacity-100">
                   {[
                     { label: "个人中心", icon: UsersRound },
                     { label: "系统设置", icon: Settings, active: true },
@@ -270,7 +334,7 @@ export default function DashboardPage() {
                   ].map((item) => {
                     const Icon = item.icon;
                     return (
-                      <button key={item.label} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${item.active ? "bg-violet-50 text-[#6236df]" : "text-slate-600 hover:bg-slate-50"}`}>
+                      <button key={item.label} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${item.active ? "bg-violet-50 text-[#6236df]" : "text-slate-600 hover:bg-slate-50"}`} onClick={item.label === "退出登录" ? logout : undefined}>
                         <Icon className="h-4 w-4" />
                         {item.label}
                       </button>

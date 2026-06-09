@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import {
@@ -16,6 +17,7 @@ import {
   FileText,
   FolderTree,
   GraduationCap,
+  Home,
   ImageIcon,
   Layers3,
   Library,
@@ -322,6 +324,10 @@ function WorkspaceNav({ activeSection, setActiveSection }: { activeSection: Work
           <p className="text-xs text-slate-500">医学学术PPT工作台</p>
         </div>
       </div>
+      <Link href="/" className="mt-4 flex items-center justify-center gap-2 rounded-md border border-violet-100 bg-violet-50 px-3 py-2.5 text-sm font-semibold text-violet-700 transition hover:border-violet-200 hover:bg-violet-100">
+        <Home className="h-4 w-4" />
+        返回主页
+      </Link>
       <nav className="mt-5 space-y-2">
         {items.map((item) => {
           const Icon = item.icon;
